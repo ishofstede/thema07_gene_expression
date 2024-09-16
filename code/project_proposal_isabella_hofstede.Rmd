@@ -1,0 +1,64 @@
+---
+title: "project_proposal"
+author: "Isabella Hofstede"
+date: "17_02_2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project descriptie 
+Met dit project wordt een analyse uitgevoerd op metingen van genexpressiegegevens, specifiek van RNA sequencing. Na inspectie en selectie van een openbare dataset uit een online database zal literatuuronderzoek uitgevoerd worden gevolgd door een gronige data-analyse. Met duidelijk inzicht in gen-activiteit tijdens een bepaalde aandoening, kunnen we een goed beeld krijgen in de oorzaken, betrokken genen en routes van dergelijke aandoeningen. Om de data te verwerken, analyseren en visualiseren wordt gebruik gemaakt van de statistische programmeertaal R.
+
+## Uitleg dataset 
+De uitgekozen dataset is afkomstig van NCBI en gaat over de omgevingsfactoren die overgedragen worden door aryl hydrocarbon receptor en daardoor de ernst van psoriatische huidontsteking beïnvloeden. Lesionale en niet-lesionele psoriasishuidbiopten werden verkregen van patiënten van Europese afstammelingen die waren gerekruteerd in het Psoriasiscentrum, Universitair Medisch Centrum Schleswig-Holstein, Kiel (Duitsland) en die op het moment van het bezoek geen systemische behandeling kregen. Vier huidbiopsieën werden verkregen van gezonde huid van donoren van Europese afstammelingen die plastische chirurgische ingrepen ondergingen in Guy’s and St. Thomas ’Hospital, Londen (VK). De volledige demografische gegevens van patiënten en gezonde controles staan in tabel S1 van het Supplemental Experimental Procedures Rapport. 
+
+De dataset is opgesplitst in 8 patienten verdeeld over 4 groepen:
+
+
+## Projectdoelen en tijdsframe 
+Week 1 en 2: interessant vinden
+dataset (s) in online databases. Product:
+productvoorstel
+
+Week 3: verkennende gegevens uitvoeren
+Analyse om de datakwaliteit te beoordelen en te beslissen
+op vervolganalyse stappen. Product:
+EDA-hoofdstuk in visualisatie van labjournaals
+bevindingen.
+
+Week 4: Meerdere analysestappen; (i) gegevens
+annotatie, (ii) statistische analyse
+(handmatig) en (iii) R-pakket (ten) gebruiken voor
+het vinden van de meest differentieel uitgedrukt
+genen (DEG's) en (iv) Kwaliteitscontrole op
+statistische resultaten (meerdere testen).
+Product: geannoteerde dataset en lijst van
+DEGs.
+
+Week 5/6: Het laatste deel van dit project
+wordt gewerkt aan een volledige analyse van de gegevens.
+Op basis van de onderzoeksvragen en
+begeleidende publicatie, meerdere
+routebeschrijvingen zijn beschikbaar. Product:
+visualisaties die de eindresultaten presenteren.
+
+Week 7: Afronding van het project en
+de resultaten samenvatten op een poster.
+
+Week 8/9: Schrijven van een artikelpresentatie
+de resultaten.
+
+## Potenttiele pitfalls
+
+
+## Verwachte uitkomsten
+
+
+## Resources 
+Dataset: 
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE47944
+Volledig artikel:
+https://www.sciencedirect.com/science/article/pii/S1074761314001836?via%3Dihub

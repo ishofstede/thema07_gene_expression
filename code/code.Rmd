@@ -1,0 +1,307 @@
+---
+title: "aryl_hydrocarbon"
+author: "Isabella Hofstede"
+date: "2/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cashe = TRUE)
+```
+
+## Loading packages
+The following packages are being loaded. 
+```{r, echo=FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("edgeR")
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("EnhancedVolcano")
+```
+```{r}
+install.packages('PoiClaClu')
+```
+
+# Installing libraries 
+The following libraries have been installed.
+```{r, echo=FALSE}
+# Load GEOquery for 
+library(GEOquery)
+# Load affy library has a density plotting function
+library(affy)
+# Load scales library for coloring 
+library(scales)
+# Load DESeq2 library for bioconductor analysis 
+library('DESeq2')
+# Load pheatmap library for heatmap (install.packages('pheatmap'))
+library(pheatmap)
+# Load PoiClaClu for multi-dimentional scaling 
+library('PoiClaClu')
+# Load ggplot for plotting
+library(ggplot2)
+# Load edgeR
+library(edgeR)
+```
+
+## loading data 
+The data frame is built up from sample number and read counts. Each sample has 
+different values attached in the phenotype data frame. The ones that will be
+looked at during this experiment are lesional (L) versus non lesional (NL) 
+psoriasis skin with healthy skin tissues (H) as a control group. Of these types
+of skin tissues there were multiple types of treatment given: agonist, 
+antagonist, Culture/DMSO and untreated (control).
+
+```{r}
+my_data <- read.table('./GSE47944_ps_tt_gel_raw.txt', header = TRUE, 
+                      row.names = 1)
+classification <- getGEO(filename="GSE47944_series_matrix.txt")
+phenodata <- classification@phenoData@data
+```
+
+## Data preperation
+```{r}
+# 64 sick samples
+sick_data <- my_data[1:64]
+
+#20 healthy samples
+healthy_data <- my_data[65: 84]
+```
+
+##Boxplot Analyses
+```{r}
+# Create 3 boxplots of sick and healthy patiens 
+boxplot(log2(my_data + 1), data=my_data, xlab="samples", ylab="log2(counts)", 
+    main="Gene counts of healthy and sick patients", las=2, par(cex.axis=0.45))
+boxplot(log2(sick_data + 1), data=my_data, xlab="samples", ylab="log2(counts)", 
+    main="gene counts of sick patients", col="red", las=2)
+boxplot(log2(healthy_data + 1), data=my_data, xlab="samples", ylab="log2(counts)", 
+    main="gene counts of healthy patients", col="blue", las=2)
+```
+
+
+##density plot of all sick patients
+```{r}
+## Plot the log2-transformed data with a 0.1 pseudocount of the whole dataset
+myColors <- hue_pal()(4)
+plotDensity(log2(my_data + 0.1), col=rep(myColors, each=3),
+            lty=c(1:ncol(my_data)), xlab='Log2(count)',
+            main='Expression Distribution of all patients')
+
+## Add a legend and vertical line
+legend('topright', names(my_data), lty=c(1:ncol(my_data)),
+       col=rep(myColors, each=3))
+abline(v=-1.5, lwd=1, col='red', lty=2)
+
+## Plot the log2-transformed data with a 0.1 pseudocount of the sick patients
+plotDensity(log2(sick_data + 0.1), col=rep(myColors, each=3),
+            lty=c(1:ncol(sick_data)), xlab='Log2(count)',
+            main='Expression Distribution of sick patients')
+
+## Add a legend and vertical line
+legend('topright', names(sick_data), lty=c(1:ncol(my_data)),
+       col=rep(myColors, each=3))
+abline(v=-1.5, lwd=1, col='red', lty=2)
+
+## Plot the log2-transformed data with a 0.1 pseudocount of healthy patients
+plotDensity(log2(healthy_data + 0.1), col=rep(myColors, each=3),
+            lty=c(1:ncol(healthy_data)), xlab='Log2(count)',
+            main='Expression Distribution of healthy patients')
+
+## Add a legend and vertical line
+legend('topright', names(healthy_data), lty=c(1:ncol(my_data)),
+       col=rep(myColors, each=3))
+abline(v=-1.5, lwd=1, col='red', lty=2)
+```
+
+##Barplot analysis 
+```{r}
+# Create 3 barplots of the genecounts of sick and healthy patients
+barplot(colSums(my_data) / 1e6, xlab="samples", ylab="log2(counts)", 
+    main="gene counts of all patients", las=2, cex.names= 0.45)
+barplot(colSums(sick_data) / 1e6, xlab="samples", ylab="log2(counts)", 
+    main="gene counts of sick patients", col="red", las=2, cex.names= 0.45)
+barplot(colSums(healthy_data) / 1e6, xlab="samples", ylab="log2(counts)", 
+    main="gene counts of healthy patients", col="blue", las=2, cex.names= 0.45)
+```
+
+## Normalisation 
+```{r}
+# DESeq2 will construct a SummarizedExperiment object and combine this 
+# into a 'DESeqDataSet' object. The 'design' argument usually indicates the 
+# experimental design using the condition(s) names as a 'factor', for now 
+#we use just '~ 1'
+(ddsMat <- DESeqDataSetFromMatrix(countData = my_data,
+                                  colData = data.frame(samples = names(my_data))
+                                  , design = ~ 1))
+
+# Perform normalization
+rld.dds <- vst(ddsMat)
+
+# 'Extract' normalized values
+rld <- assay(rld.dds)
+```
+
+##heatmap
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# Calculate basic distance metric (using euclidean distance, see '?dist')
+sampledists <- dist( t( rld ))
+# Convert the 'dist' object into a matrix for creating a heatmap
+sampleDistMatrix <- as.matrix(sampledists)
+
+# The annotation is an extra layer that will be plotted above the heatmap columns
+# indicating the cell type
+annotation <- data.frame(Cell = factor(c(rep(1, 64), rep(2, 20)),
+                                          labels = c("Sick", "Healthy")))
+
+annotation$tissue <- phenodata$characteristics_ch1.5
+annotation$treatment <- phenodata$characteristics_ch1.6
+
+# Set the rownames of the annotation dataframe to the sample names (required)
+rownames(annotation) <- names(my_data)
+
+pheatmap(sampleDistMatrix, show_colnames = FALSE,
+         annotation_col = annotation,
+         clustering_distance_rows = sampledists,
+         clustering_distance_cols = sampledists,
+         show_rownames = F,
+         main = "Euclidean Sample Distances")
+```
+##multi-dimentional scaling 
+```{r}
+# Use the raw (not r-log transformed!) counts
+dds <- assay(ddsMat)
+poisd <- PoissonDistance( t(dds) )
+
+# Extract the matrix with distances
+samplePoisDistMatrix <- as.matrix(poisd$dd)
+
+# Calculate the MDS and get the X- and Y-coordinates
+mdsPoisData <- data.frame( cmdscale(samplePoisDistMatrix) )
+
+# And set some better readable names for the columns
+names(mdsPoisData) <- c('x_coord', 'y_coord')
+
+# Separate the annotation factor (as the variable name is used as label)
+groups <- factor(c(rep(1, 64), rep(2, 20)),
+                                    labels = c("Sick", "Healthy"))
+groups <- as.factor(paste(annotation$Cell, phenodata$characteristics_ch1.5, phenodata$characteristics_ch1.6, sep= "_"))
+coldata <- names(my_data)
+levels(groups)
+
+# Create the plot using ggplot
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 4) +
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
+There is a clear clustering of multiple samples.For further analysis the groups that will be compared are the different types of treatment from one type of tissue. That means antagonist vs agonist treatment type of healthy tissue. 
+
+## chapter 4 pre-processing data
+```{r}
+# Perform a naive FPM normalization
+# Note: log transformation includes a pseudocount of 1
+my_data.fpm <- log2( (my_data/ (colSums(my_data) / 1e6)) + 1 )
+
+# Removing the low counts
+# Which values in my_data_fpm are greater than 0.5?
+keep <- apply(my_data.fpm, 1, function(row) all(row >5))
+
+# subset the rows of countdata to keep the more highly expressed genes
+counts_keep <- my_data.fpm[keep,] 
+
+# The total number of counts 
+dim(my_data.fpm)
+
+# The amount of counts to keep
+dim(counts_keep)
+
+# Seperate into healthy averages and sick averages
+counts_keep$avg_h <- rowMeans(counts_keep[1:64])
+counts_keep$avg_s <- rowMeans(counts_keep[65: 84])
+
+# Generate FC values into the cleaned dataset
+counts_keep$FC_val <- counts_keep$avg_h - counts_keep$avg_s
+
+# Make a histogram
+hist(as.matrix(counts_keep$FC_val), breaks=100, main="log2 fold change values over genes", xlab = "log2-FC", ylab="genes")
+abline(v = c(1, -1), col="red")
+```
+## Using bioconductor packages 
+```{r}
+# Install library
+library( "DESeq2" )
+library(ggplot2)
+
+# Read the countdata
+countData <- my_data
+
+dds <- DESeqDataSetFromMatrix(countData = countData,
+                              colData = annotation,
+                              design = ~ tissue + treatment)
+
+
+dds <- DESeq(dds)
+
+#check result table
+res <- results(dds)
+head(results(dds, tidy=TRUE))
+summary(res)
+#summary(results(dds, contrast = c("group", "tissue_tissue:Nonlesion_vs_tissue:Healthy", #"treatment_treatment:Antagonist_vs_treatment:Agonist"),
+#                alpha = 0.05))
+
+#sorting summary list with p-value 
+res <-res[order(res$padj),]
+head(res)
+
+#plotcounts
+par(mfrow=c(2,3))
+plotCounts(dds, gene="ENSG00000237223|SULT1C2P1", intgroup = "tissue")
+```
+
+
+##volcano plot 
+
+```{r}
+#reset par
+par(mfrow=c(1,1))
+# Make a basic volcano plot
+with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-3,3)))
+
+# Add colored points: blue if padj<0.01, red if log2FC>1 and padj<0.05)
+with(subset(res, padj<.01 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(res, padj<.01 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+
+```{r}
+library(EnhancedVolcano)
+
+## Simple function for plotting a Volcano plot, returns a ggplot object
+deseq.volcano <- function(res, my_data) {
+  return(EnhancedVolcano(res, x = 'log2FoldChange', y = 'padj',
+                         lab=rownames(res),
+                         title = paste(datasetName, "trisomic vs disomic"),
+                         subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
+                         # Change text and icon sizes
+                         labSize = 3, pointSize = 1.5, axisLabSize=10, titleLabSize=12,
+                         subtitleLabSize=8, captionLabSize=10,
+                         # Disable legend
+                         legendPosition = "none",
+                         # Set cutoffs
+                         pCutoff = 0.05, FCcutoff = 2))
+}
+
+## Note: input data is the corrected DESeq2 output using the 'lfcShrink' function (see chapter 4)
+deseq.volcano(res = my_data, datasetName = "dds")
+```
+
+
+
+## Links
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE47944

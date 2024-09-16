@@ -1,0 +1,61 @@
+---
+title: "logboek"
+author: "Isabella Hofstede"
+date: "3/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## week 1
+Found a dataset relating to skin deceases affected by enviornmental factors 
+which uses to gene count analysis. 
+Source: NCBI dataset https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE47944
+Additionally, here's a document containing the medical terminology found in the paper:
+https://pubmed.ncbi.nlm.nih.gov/24909886/ 
+
+## week 2
+Finished the project proposal. 
+
+## week 3
+Performed exploratory data analysis on the raw dataset. Because the dataset is 
+rather large (37166 observations of 84 variables) it has been split into the 
+healthy and sick patients. Boxplot analysis show that there's multiples 
+outliers in both the healthy and sick group. Further analysis, especially in 
+the heat map proved there is some clustering happening if separated by gender. 
+Further analysis is needed. 
+
+## week 4
+After analyzing the phenodata the dataset appears to have more variables than 
+just "sick" and "healthy" patients with variation in gender. The variables 
+that seem to have affect on the gene counts are: tissue (lesion, non-lesion); 
+treatment (untreated, Culture/DMSO, agonist, antagonist) 
+and age (ranges from 30 to 63 in sick patients but with exact age given. However 
+for healthy patients only a range of 30 to 74 is given with a mean of 51).
+
+After performing multi-dimentional scaling there are still seemingly four 
+separate groups appearing. 
+
+## week 5
+Expression Level Condition: 
+Mean expression of at least 15 reads in 2 of 12 tissue/treatment conditions.
+Result: 15510 genes
+
+AhR Target Condition:
+Treatment test: < 0.05 in at least 1 tissue and treatment. Fold changes of the 2
+treatments must be opposing in the relevant tissue.
+Result: 884 genes
+
+Treatment Consistency Condition:
+Treatment test: < 0.05 for either treatment in both L and NL. Fold changes of 
+the 2 treatments must be opposing in one of L and NL.
+Result: 51 genes
+
+Disease Relevance Condition:
+Differential expression in untreated L vs NL < 0.05
+Result: 41 genes
+
+## week 6
+The data has been pre-processed. The mean expression and the fold change has been calculated. The thresholds 
