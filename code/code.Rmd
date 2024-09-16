@@ -10,27 +10,24 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(cashe = TRUE)
 ```
 
-## Loading packages
-The following packages are being loaded. 
-```{r, echo=FALSE}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("edgeR")
-
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("EnhancedVolcano")
+Installing BiocManager:
+```{r echo = T, results = 'hide', warning=FALSE, message=FALSE}
+if (!require("BiocManager")){
+  install.packages("BiocManager", dependencies = TRUE)
+}
 ```
-```{r}
-install.packages('PoiClaClu')
+
+Installing PoiClaClu for multidimensional scaling.
+```{r echo = T, results = 'hide', warning=FALSE, message=FALSE}
+if (!require(PoiClaClu)){
+  install.packages("lPoiClaClu", dependencies = TRUE)
+}
 ```
 
 # Installing libraries 
 The following libraries have been installed.
 ```{r, echo=FALSE}
-# Load GEOquery for 
+# Load GEOquery 
 library(GEOquery)
 # Load affy library has a density plotting function
 library(affy)
@@ -46,6 +43,8 @@ library('PoiClaClu')
 library(ggplot2)
 # Load edgeR
 library(edgeR)
+# Load EnhancedVolcano 
+library(EnhancedVolcano)
 ```
 
 ## loading data 
@@ -57,9 +56,9 @@ of skin tissues there were multiple types of treatment given: agonist,
 antagonist, Culture/DMSO and untreated (control).
 
 ```{r}
-my_data <- read.table('./GSE47944_ps_tt_gel_raw.txt', header = TRUE, 
+my_data <- read.table('../data/GSE47944_ps_tt_gel_raw.txt', header = TRUE, 
                       row.names = 1)
-classification <- getGEO(filename="GSE47944_series_matrix.txt")
+classification <- getGEO(filename='../data/GSE47944_series_matrix.txt')
 phenodata <- classification@phenoData@data
 ```
 
@@ -298,9 +297,8 @@ deseq.volcano <- function(res, my_data) {
 }
 
 ## Note: input data is the corrected DESeq2 output using the 'lfcShrink' function (see chapter 4)
-deseq.volcano(res = my_data, datasetName = "dds")
+deseq.volcano(res = my_data, my_data = "dds")
 ```
-
 
 
 ## Links
