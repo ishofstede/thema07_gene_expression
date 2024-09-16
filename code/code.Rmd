@@ -281,23 +281,23 @@ with(subset(res, padj<.01 & abs(log2FoldChange)>2), points(log2FoldChange, -log1
 ```{r}
 library(EnhancedVolcano)
 
-## Simple function for plotting a Volcano plot, returns a ggplot object
-deseq.volcano <- function(res, my_data) {
-  return(EnhancedVolcano(res, x = 'log2FoldChange', y = 'padj',
-                         lab=rownames(res),
-                         title = paste(datasetName, "trisomic vs disomic"),
-                         subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
-                         # Change text and icon sizes
-                         labSize = 3, pointSize = 1.5, axisLabSize=10, titleLabSize=12,
-                         subtitleLabSize=8, captionLabSize=10,
-                         # Disable legend
-                         legendPosition = "none",
-                         # Set cutoffs
-                         pCutoff = 0.05, FCcutoff = 2))
-}
+EnhancedVolcano(res,
+                x = 'log2FoldChange',
+                y = 'padj',  # Use padj instead of pvalue for the y-axis
+                lab = rownames(res),
+                title = "Volcano Plot",
+                subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
+                pCutoff = 0.05,         # Set cutoff for p-value
+                FCcutoff = 2,           # Set cutoff for fold change
+                pointSize = 2.0,        # Size of points
+                labSize = 3.0,          # Size of labels
+                axisLabSize = 10,       # Axis label size
+                titleLabSize = 12,      # Title label size
+                subtitleLabSize = 8,    # Subtitle label size
+                captionLabSize = 10,     # Caption label size
+                legendPosition = "right"  # Position of legend
+)
 
-## Note: input data is the corrected DESeq2 output using the 'lfcShrink' function (see chapter 4)
-deseq.volcano(res = my_data, my_data = "dds")
 ```
 
 
