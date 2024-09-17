@@ -45,6 +45,12 @@ library(ggplot2)
 library(edgeR)
 # Load EnhancedVolcano 
 library(EnhancedVolcano)
+# Load DESeq2
+library(DESeq2)
+# Load VennDiagram
+library(VennDiagram)
+# Load grid
+library(grid)
 ```
 
 ## loading data 
@@ -313,6 +319,31 @@ significant_degs <- res %>%
 # Display the most significant DEGs
 head(significant_degs, n = 10)  # Change n to show more or fewer DEGs
 
+```
+
+##Venn diagram
+
+```{r}
+# Extract significant gene IDs for each tissue type
+lesion_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Lesion_treatment")]
+nonlesion_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Nonlesion_treatment")]
+healthy_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Healthy_treatment")]
+
+# Create a Venn Diagram comparing DEGs from different tissue types
+venn.plot <- draw.triple.venn(
+  area1 = length(lesion_genes),
+  area2 = length(nonlesion_genes),
+  area3 = length(healthy_genes),
+  n12 = length(intersect(lesion_genes, nonlesion_genes)),
+  n23 = length(intersect(nonlesion_genes, healthy_genes)),
+  n13 = length(intersect(lesion_genes, healthy_genes)),
+  n123 = length(intersect(lesion_genes, nonlesion_genes, healthy_genes)),
+  category = c("Lesion_treatment", "Nonlesion_treatment", "Healthy_treatment"),
+  fill = c("light blue", "light green", "pink"),
+  alpha = rep(0.5, 3)
+)
+
+grid.draw(venn.plot)
 ```
 
 ## Links
