@@ -283,23 +283,37 @@ library(EnhancedVolcano)
 
 EnhancedVolcano(res,
                 x = 'log2FoldChange',
-                y = 'padj',  # Use padj instead of pvalue for the y-axis
+                y = 'padj',  
                 lab = rownames(res),
                 title = "Volcano Plot",
                 subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
-                pCutoff = 0.05,         # Set cutoff for p-value
-                FCcutoff = 2,           # Set cutoff for fold change
-                pointSize = 2.0,        # Size of points
-                labSize = 3.0,          # Size of labels
-                axisLabSize = 10,       # Axis label size
-                titleLabSize = 12,      # Title label size
-                subtitleLabSize = 8,    # Subtitle label size
-                captionLabSize = 10,     # Caption label size
-                legendPosition = "right"  # Position of legend
+                pCutoff = 0.05,         #cutoff for p-value
+                FCcutoff = 2,           #cutoff for fold change
+                pointSize = 2.0,        #size of points
+                labSize = 3.0,          #size of labels
+                axisLabSize = 10,       #axis label size
+                titleLabSize = 12,      #title label size
+                subtitleLabSize = 8,    #subtitle label size
+                captionLabSize = 10,     #caption label size
+                legendPosition = "right"  #position of legend
 )
 
 ```
+X-axis tells you how much the gene is expressed (up or down), and Y-axis shows how significant this difference is. There are a lot of genes with high fold change and are therefore more up or downregulated. The downregulation is more significant than the upregulat MMP1 and CXCL% stand out the most as the most significantly downregulated genes.
 
+```{r}
+library(dplyr)
+
+# Filter the DEGs based on adjusted p-value and log2 fold change
+significant_degs <- res %>%
+  as.data.frame() %>%  
+  filter(padj < 0.05 & abs(log2FoldChange) >= 2) %>% 
+  arrange(padj)  
+
+# Display the most significant DEGs
+head(significant_degs, n = 10)  # Change n to show more or fewer DEGs
+
+```
 
 ## Links
 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE47944
