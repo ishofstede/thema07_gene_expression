@@ -24,6 +24,13 @@ if (!require(PoiClaClu)){
 }
 ```
 
+Installing Venndiagram for plotting venn diagram.
+```{r echo = T, results = 'hide', warning=FALSE, message=FALSE}
+if (!require(VennDiagram)){
+  install.packages("VennDiagram", dependencies = TRUE)
+}
+```
+
 # Installing libraries 
 The following libraries have been installed.
 ```{r, echo=FALSE}
@@ -322,29 +329,41 @@ head(significant_degs, n = 10)  # Change n to show more or fewer DEGs
 ```
 
 ##Venn diagram
-
 ```{r}
-# Extract significant gene IDs for each tissue type
-lesion_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Lesion_treatment")]
-nonlesion_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Nonlesion_treatment")]
-healthy_genes <- rownames(res)[which(res$padj < 0.05 & res$log2FoldChange > 1 & res$tissue == "Healthy_treatment")]
+# Example vectors of gene names (replace these with your actual gene lists)
+lesion_genes <- rownames(res[res$padj < 0.05 & res$tissue == "Lesion_treatment", ])
+nonlesion_genes <- rownames(res[res$padj < 0.05 & res$tissue == "Nonlesion_treatment", ])
+healthy_genes <- rownames(res[res$padj < 0.05 & res$tissue == "Healthy_treatment", ])
 
-# Create a Venn Diagram comparing DEGs from different tissue types
-venn.plot <- draw.triple.venn(
-  area1 = length(lesion_genes),
-  area2 = length(nonlesion_genes),
-  area3 = length(healthy_genes),
-  n12 = length(intersect(lesion_genes, nonlesion_genes)),
-  n23 = length(intersect(nonlesion_genes, healthy_genes)),
-  n13 = length(intersect(lesion_genes, healthy_genes)),
-  n123 = length(intersect(lesion_genes, nonlesion_genes, healthy_genes)),
-  category = c("Lesion_treatment", "Nonlesion_treatment", "Healthy_treatment"),
-  fill = c("light blue", "light green", "pink"),
-  alpha = rep(0.5, 3)
+
+library(VennDiagram)
+
+# Create a list of the gene sets
+gene_list <- list(Lesion = lesion_genes, 
+                  Nonlesion = nonlesion_genes, 
+                  Healthy = healthy_genes)
+
+# Create the Venn diagram
+venn.plot <- venn.diagram(
+  x = gene_list,
+  category.names = c("Lesion", "Nonlesion", "Healthy"),
+  filename = NULL, # Set to NULL to plot directly
+  output = TRUE,
+  lwd = 2,
+  lty = "solid",
+  fill = c("red", "blue", "green"),
+  alpha = 0.5,
+  cat.col = c("red", "blue", "green"),
+  cat.cex = 1.5,
+  cat.pos = 0, # adjust to change category position
+  main = "Venn Diagram of Differentially Expressed Genes",
+  main.cex = 1.5
 )
 
+# Plot the Venn diagram
 grid.draw(venn.plot)
 ```
+
 
 ## Links
 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE47944
